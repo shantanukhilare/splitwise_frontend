@@ -1,0 +1,409 @@
+@import "tailwindcss";
+
+.background-image{
+    background-image: url("./assets/background7.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+.animated-background {
+    background: linear-gradient(-45deg, #0f0f23, #1a1a2e, #16213e, #0f3460, #1e3a8a, #7c2d12);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.animated-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 60% 10%, rgba(34, 197, 94, 0.3) 0%, transparent 50%);
+    animation: float 25s ease-in-out infinite;
+}
+
+.animated-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 60% 30%, rgba(168, 85, 247, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 30% 70%, rgba(14, 165, 233, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(251, 146, 60, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(239, 68, 68, 0.2) 0%, transparent 50%);
+    animation: float 30s ease-in-out infinite reverse;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translate(0px, 0px) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translate(30px, -30px) rotate(90deg) scale(1.1);
+    }
+    50% {
+        transform: translate(-20px, 20px) rotate(180deg) scale(0.9);
+    }
+    75% {
+        transform: translate(40px, 10px) rotate(270deg) scale(1.05);
+    }
+}
+
+/* Additional floating particles animation */
+@keyframes particles {
+    0%, 100% {
+        transform: translateY(0px) translateX(0px) scale(1);
+        opacity: 0.7;
+    }
+    33% {
+        transform: translateY(-20px) translateX(15px) scale(1.2);
+        opacity: 1;
+    }
+    66% {
+        transform: translateY(10px) translateX(-10px) scale(0.8);
+        opacity: 0.5;
+    }
+}
+
+/* Pulsing glow effect */
+@keyframes pulse-glow {
+    0%, 100% {
+        filter: brightness(1) saturate(1);
+    }
+    50% {
+        filter: brightness(1.3) saturate(1.5);
+    }
+}
+
+/* Modern Button Component */
+.modern-btn {
+  @apply relative inline-flex items-center justify-center px-8 py-4 overflow-hidden font-bold text-white transition-all duration-500 ease-out border-0 rounded-2xl cursor-pointer items-center gap-3 px-6 py-3 shadow-lg;
+  background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
+  background-size: 200% 200%;
+  box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
+  animation: gradient-shift 3s ease infinite;
+}
+
+.heading{
+  /* @apply text-center mb-5 bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl flex justify-between */
+    @apply text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent pb-2
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.modern-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(255, 107, 107, 0.6), 0 10px 20px rgba(0, 0, 0, 0.15);
+  animation-duration: 1s;
+}
+
+.modern-btn:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.modern-btn::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-all duration-500 ease-out;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: inherit;
+}
+
+.modern-btn:hover::before {
+  opacity: 1;
+}
+
+.modern-btn::after {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-all duration-700;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  border-radius: inherit;
+  transform: scale(0);
+}
+
+.modern-btn:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+
+/* Modern Input Group */
+.modern-input-group {
+  @apply relative mb-8;
+}
+
+.modern-input {
+  @apply w-full px-6 py-4 text-gray-800 bg-gradient-to-r from-white to-gray-50 border-2 border-transparent rounded-2xl outline-none transition-all duration-500 focus:border-transparent;
+  background-clip: padding-box;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+}
+
+.modern-input:focus {
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+  box-shadow: 0 12px 40px rgba(79, 70, 229, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.9), 0 0 0 3px rgba(79, 70, 229, 0.1);
+  transform: translateY(-2px);
+}
+
+.modern-input:focus + .modern-label,
+.modern-input:valid + .modern-label,
+.modern-input:-webkit-autofill + .modern-label,
+.modern-input:not(:placeholder-shown) + .modern-label {
+  @apply transform -translate-y-10 -translate-x-2 scale-90 px-3 py-1 rounded-lg;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.modern-label {
+  @apply absolute left-4 top-4 text-gray-600 transition-all duration-500 pointer-events-none origin-left font-medium flex items-center gap-2;
+}
+
+.modern-label svg {
+  @apply transition-all duration-500;
+}
+
+.modern-input:focus + .modern-label svg,
+.modern-input:valid + .modern-label svg,
+.modern-input:-webkit-autofill + .modern-label svg,
+.modern-input:not(:placeholder-shown) + .modern-label svg {
+  @apply text-white scale-90;
+}
+
+/* Handle autofill styling */
+.modern-input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #374151 !important;
+}
+
+.modern-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #374151 !important;
+}
+
+
+/* Modern Logout Button */
+.logout {
+  @apply flex justify-center;
+}
+
+.logout .sure {
+  @apply w-24 h-10 bg-red-500 text-white rounded-lg font-medium transition-all duration-300 cursor-pointer border-0 flex items-center justify-center relative overflow-hidden;
+}
+
+.logout .sure:hover {
+  @apply bg-red-600 transform scale-105 shadow-lg w-28;
+}
+
+.logout .sure:active {
+  @apply transform scale-95;
+}
+
+.logout .sure p {
+  @apply transition-all duration-300 text-sm font-semibold;
+}
+
+.logout .sure p::before {
+  content: attr(data-title);
+}
+
+.logout .sure:hover p::before {
+  content: attr(data-text);
+}
+
+
+/* Legacy styles removed - now using modern components */
+
+/* From Uiverse.io by SchawnnahJ */ 
+/* Modern Loading Spinner */
+.modern-loader {
+  @apply relative w-12 h-12 mx-auto;
+}
+
+.modern-loader::before {
+  content: '';
+  @apply absolute inset-0 rounded-full border-4 border-purple-200;
+}
+
+.modern-loader::after {
+  content: '';
+  @apply absolute inset-0 rounded-full border-4 border-transparent border-t-purple-600 animate-spin;
+}
+
+/* Pulse Animation for Cards */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Floating Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Modern Nav Button */
+.nav-btn {
+  @apply relative px-4 py-2 font-medium text-white transition-all duration-300 overflow-hidden rounded-lg;
+}
+
+.nav-btn::before {
+  content: '';
+  @apply absolute bottom-0 left-0 w-0 h-0.5 bg-yellow-400 transition-all duration-300;
+}
+
+.nav-btn:hover::before {
+  @apply w-full;
+}
+
+.nav-btn:hover {
+  @apply text-yellow-300 transform scale-105;
+}
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+  .nav-btn {
+    @apply px-2 py-1 text-sm;
+  }
+}
+
+/* Glass Effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Page Transition Effects */
+.page-transition {
+  @apply transition-all duration-700 ease-in-out;
+}
+
+.page-enter {
+  opacity: 0;
+  transform: translateX(100px) scale(0.95);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateX(-100px) scale(0.95);
+}
+
+/* Cool Background Patterns */
+.cool-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cool-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  animation: float-bg 20s ease-in-out infinite;
+}
+
+@keyframes float-bg {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(1deg); }
+  66% { transform: translateY(20px) rotate(-1deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-btn {
+    @apply px-6 py-3 text-sm;
+  }
+  
+  .modern-input {
+    @apply px-4 py-3 text-sm;
+  }
+  
+  .modern-label {
+    @apply left-3 top-3 text-sm;
+  }
+  
+  .modern-input:focus + .modern-label,
+  .modern-input:valid + .modern-label,
+  .modern-input:-webkit-autofill + .modern-label,
+  .modern-input:not(:placeholder-shown) + .modern-label {
+    @apply -translate-y-8 scale-75 px-2 py-0.5;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-input-group {
+    @apply mb-6;
+  }
+  
+  .modern-btn {
+    @apply px-4 py-2 text-xs;
+  }
+}
