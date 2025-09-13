@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { userRegister } from '../services/userService';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phoneNumber: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.name || !formData.email || !formData.phoneNumber || !formData.password) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -22,6 +24,8 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     try {
       // Add your signup API call here
+      const response = await userRegister(formData.name, formData.email, formData.phoneNumber, formData.password);
+      console.log(response);
       toast.success("Account created successfully!");
       navigate("/login");
     } catch (err) {
@@ -59,7 +63,7 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -85,6 +89,7 @@ const Signup: React.FC = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 className="modern-input"
+                placeholder=" "
               />
               <label className="modern-label">Full Name</label>
             </div>
@@ -96,8 +101,21 @@ const Signup: React.FC = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="modern-input"
+                placeholder=" "
               />
               <label className="modern-label">Email Address</label>
+            </div>
+
+            <div className="modern-input-group">
+              <input
+                type="number"
+                required
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                className="modern-input"
+                placeholder=" "
+              />
+              <label className="modern-label">Mobile Number</label>
             </div>
 
             <div className="modern-input-group">
@@ -107,6 +125,7 @@ const Signup: React.FC = () => {
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 className="modern-input"
+                placeholder=" "
               />
               <label className="modern-label">Password</label>
             </div>

@@ -112,7 +112,7 @@ const Groups: React.FC = () => {
                       boxShadow: "0 20px 40px rgba(255,255,255,0.1)"
                     }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-xl cursor-pointer hover:bg-white/10 transition-all duration-300 group"
+                    className="bg-black flex justify-between item-center  border border-white/10 p-6 rounded-xl cursor-pointer hover:bg-white/10 transition-all duration-300 group"
                     onClick={() =>
                       navigate(
                         `/groups/${encodeURIComponent(group.groupName)}?groupId=${
@@ -125,12 +125,7 @@ const Groups: React.FC = () => {
                       <div className="p-3 bg-purple-500/20 rounded-xl group-hover:bg-purple-500/30 transition-all duration-300">
                         <FiUsers className="w-6 h-6 text-purple-300" />
                       </div>
-                      <motion.div
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        whileHover={{ x: 5 }}
-                      >
-                        <FiArrowRight className="w-5 h-5 text-white/60" />
-                      </motion.div>
+                      
                     </div>
                     <h3 className="text-white font-semibold text-lg mb-2 group-hover:text-purple-200 transition-colors duration-300">
                       {group.groupName}
@@ -138,6 +133,12 @@ const Groups: React.FC = () => {
                     <p className="text-white/60 text-sm">
                       {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
                     </p>
+                    <motion.div
+                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        whileHover={{ x: 5 }}
+                      >
+                        <FiArrowRight className="w-5 h-5 text-white/60" />
+                      </motion.div>
                   </motion.div>
                 );
               })}
