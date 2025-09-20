@@ -12,7 +12,7 @@ interface AddMemberProps {
 }
 
 interface User {
-  userId: number; // ← Fixed: changed from id to userId
+  userId: number; 
   name: string;
 }
 
@@ -36,27 +36,31 @@ const AddMember: React.FC<AddMemberProps> = ({
         try {
           setLoading(true);
           const data = await friendsList(currentUserId);
+          console.log('Fetched users:', data);
           
           // First, filter out current user and create unique users map
           const uniqueUsersMap = new Map();
           data.forEach(user => {
+            console.log('user in loop:', user);
+            
             if (user.userId !== currentUserId && !uniqueUsersMap.has(user.userId)) {
               uniqueUsersMap.set(user.userId, {
-                userId: user.userId,
+                userId: user.userId, // ✅ corrected key here
                 name: user.name
               });
             }
-          });
+          });          
           
           let filteredUsers = Array.from(uniqueUsersMap.values());
-          
+
           // Filter out users who are already group members
           if (groupMembers && groupMembers.length > 0) {
             const groupMemberIds = new Set(groupMembers.map(member => member.id));
             filteredUsers = filteredUsers.filter(user => !groupMemberIds.has(user.userId));
           }
           
-          console.log('Final filtered users:', filteredUsers);
+          console.log('Filtered users:', filteredUsers);
+                    
           setUsers(filteredUsers);
         } catch (err) {
           console.error('Error fetching users:', err);

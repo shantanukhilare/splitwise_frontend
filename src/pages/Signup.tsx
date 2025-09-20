@@ -63,18 +63,18 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-24">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         className="w-full max-w-md"
       >
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 glass-effect"
         >
-          <motion.h1 
+          <motion.h1
             variants={itemVariants}
             className="text-4xl font-bold text-center mb-8 gradient-text"
           >
@@ -87,7 +87,7 @@ const Signup: React.FC = () => {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="modern-input"
                 placeholder=" "
               />
@@ -99,7 +99,7 @@ const Signup: React.FC = () => {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="modern-input"
                 placeholder=" "
               />
@@ -108,13 +108,22 @@ const Signup: React.FC = () => {
 
             <div className="modern-input-group">
               <input
-                type="number"
+                type="text"
                 required
                 value={formData.phoneNumber}
-                onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                maxLength={10}
+                inputMode="numeric"
+                pattern="\d*"
+                onChange={(e) => {
+                  const onlyNums = e.target.value.replace(/\D/g, ""); // remove non-digits
+                  if (onlyNums.length <= 10) {
+                    setFormData({ ...formData, phoneNumber: onlyNums });
+                  }
+                }}
                 className="modern-input"
                 placeholder=" "
               />
+
               <label className="modern-label">Mobile Number</label>
             </div>
 
@@ -123,7 +132,7 @@ const Signup: React.FC = () => {
                 type="password"
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="modern-input"
                 placeholder=" "
               />
@@ -149,7 +158,7 @@ const Signup: React.FC = () => {
             </motion.button>
           </motion.form>
 
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             className="mt-6 text-center"
           >

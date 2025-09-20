@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiUsers } from 'react-icons/fi';
-import { friendsNames  } from '../services/groupService';
+import { FiPlus, FiUsers } from 'react-icons/fi';
+import AddFriend from '../components/AddFriend';
+import { getFriendsWithDetails, type FriendsResponseBody } from '../services/FriendService';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
@@ -19,7 +20,8 @@ const itemVariants = {
 };
 
 const Friends: React.FC = () => {
-  const [friends, setFriends] = useState<string[]>([]);
+  const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
+  const [friends, setFriends] = useState<FriendsResponseBody[]>([]);
   const currentUserId:number = localStorage.getItem("id")
     ? parseInt(localStorage.getItem("id") || "0", 10)
     : 0;
@@ -27,7 +29,7 @@ const Friends: React.FC = () => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await friendsNames(currentUserId);
+        const response = await getFriendsWithDetails(currentUserId);
         setFriends(response);
       } catch (err) {
         setFriends([]);
@@ -54,17 +56,27 @@ const Friends: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <div className="p-6 flex-shrink-0">
+          <div className="p-6 flex-shrink-0 space-x-10 flex items-center justify-between ">
             <h1 className="heading">
               👫 Your Friends
             </h1>
+             {/* <p className="text-white/70 text-lg mb-6">Manage and track expenses with your groups</p> */}
+            <motion.button
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              className="modern-btn px-6 py-3 flex items-center gap-2"
+              onClick={() => setIsAddFriendOpen(true)}
+            >
+              <FiPlus className="w-4 h-4" />
+              Add Friend
+            </motion.button>
           </div>
           <div className="flex-1 overflow-y-auto px-6 pb-6">
             {friends.length > 0 ? (
               <div className="space-y-4">
                 {friends.map((friend, index) => (
                 <motion.div
-                  key={friend}
+                  key={friend.id}
                   custom={index}
                   initial="hidden"
                   animate="visible"
@@ -81,14 +93,28 @@ const Friends: React.FC = () => {
                       <FiUsers className="w-5 h-5 text-blue-300" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold text-lg">{friend}</h3>
-                      <p className="text-white/60 text-sm">Friend</p>
-                    </div>
+                      <h3 className="text-white font-semibold text-lg">{friend.name}</h3>
+                      {/* <p className='text-white/60'>Groups-</p> */}
+                      {friend.groupsList?.length > 0 &&
+                          friend.groupsList.map((group, idx) => (
+                              <span
+                                  key={idx}
+                                  className="inline-block bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-full mr-2 mt-1"
+                              >
+                                  {group}
+                              </span>
+                          ))}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-white/40 text-sm">Active</span>
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                   </div>
+                  <div className="flex-col items-center justify-end gap-3">
+    {friend.owesYou > 0 ? (
+        <p className="text-green-500 mb-3 text flex justify-end">Owes you - ${friend.owesYou}</p>
+    ) : friend.youOwe > 0 ? (
+        <p className="text-orange-300 text flex justify-end">You Owe - ${friend.youOwe}</p>
+    ) : (
+        <p className="text-white/60 text-sm flex justify-end">Settled</p>
+    )}
+</div>
                 </motion.div>
                 ))}
               </div>
@@ -105,6 +131,11 @@ const Friends: React.FC = () => {
             )}
           </div>
         </motion.div>
+        <AddFriend
+          isOpen={isAddFriendOpen}
+          onClose={() => setIsAddFriendOpen(false)}
+          currentUserId={currentUserId}
+        />
         </motion.div>
       </div>
     </div>

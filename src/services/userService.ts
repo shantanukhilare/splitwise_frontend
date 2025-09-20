@@ -40,3 +40,12 @@ export const userRegister = (
             throw new Error(err.response?.data?.message || "Registration failed")
         });
 };
+
+export const findUser = (name:string):Promise<UserResponse[]> => {
+    return axios
+        .get<UserResponse[]>(`${API_BASE_URL}/api/users/search/${name}`)
+        .then((res) => res.data)
+        .catch((err) => {
+            throw new Error(err.response?.data?.message || "User search failed")
+        });
+};

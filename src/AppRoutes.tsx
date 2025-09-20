@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+// import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -10,8 +10,8 @@ import Friends from './pages/Friends';
 import AddExpense from './pages/AddExpense';
 import Navbar from './components/Navbar';
 import GroupDashboard from './pages/GroupDashboard';
-import lottieBackground from './assets/lottie-backgrounnd.json';
-
+// import lottieBackground from './assets/lottie-backgrounnd.json';
+import bg from './assets/background5.jpg';
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -135,12 +135,15 @@ const AppRoutes: React.FC = () => {
           left: 0,
           width: '100vw',
           height: '100vh',
-          backgroundColor: '#000000',
+          // backgroundColor: '#000000',
+          backgroundImage: `url(${bg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           zIndex: -2,
         }}
       />
       {/* 🎬 Lottie Animated Background */}
-      <DotLottieReact
+      {/* <DotLottieReact
         data={lottieBackground}
         autoplay
         loop
@@ -153,7 +156,7 @@ const AppRoutes: React.FC = () => {
           zIndex: -1,
           opacity: 0.8,
         }}
-      />
+      /> */}
       <Navbar />
       <div className='pt-16 sm:pt-20'>
         <AnimatedRoutes />

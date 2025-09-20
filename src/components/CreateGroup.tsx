@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Modal from "react-modal";
 import Select from "react-select";
 import type { MultiValue } from "react-select";
-import { createGroup, getGroupMembers, type CreateGroupPayload, type GroupMembersResponseBody } from "../services/groupService";
+import { createGroup, getGroupMembers, type CreateGroupPayload, type GroupMembersResponseBody, type GroupType } from "../services/groupService";
 import { showSuccessToast } from "../utils/toastUtils"; // adjust path as needed
 
 interface User {
@@ -38,6 +38,7 @@ const CreateGroup: React.FC<CreateGroupProps> = ({
   const [selectedUsers, setSelectedUsers] = useState<Option[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [groupType, setGroupType] = useState("OTHER`");
 
   useEffect(() => {
     
@@ -88,6 +89,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       name: groupName,
       createdBy: currentUserId,
       userIds: selectedUserIds,
+      groupType: groupType
     };
     
     await createGroup(payload);
@@ -139,7 +141,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 type="text"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
-                className="w-full border border-violet-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-400 text-violet-900"
+                className="w-full border border-violet-300 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-400 text-violet-900"
                 required
               />
             </div>
@@ -180,6 +182,29 @@ const handleSubmit = async (e: React.FormEvent) => {
                 }}
               />
             </div>
+            <div>
+  <label
+    htmlFor="groupType"
+    className="block mb-2 font-semibold text-violet-700"
+  >
+    Group Type
+  </label>
+  <select
+    id="groupType"
+    value={groupType}
+    onChange={(e) => setGroupType(e.target.value)}
+    className="w-full border border-violet-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-400 text-violet-900 bg-white"
+    required
+  >
+    <option value="">Select a group type</option>
+    <option value="TRIP">Trip</option>
+    <option value="HOME">Home</option>
+    <option value="COUPLE">Couple</option>
+    <option value="FRIENDS">Friends</option>
+    <option value="FAMILY">Family</option>
+    <option value="OTHER">Other</option>
+  </select>
+</div>
             {error && <div className="text-red-500 text-sm">{error}</div>}
             <div className="flex gap-4 justify-end flex-col sm:flex-row">
               <motion.button

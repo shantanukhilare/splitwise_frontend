@@ -8,8 +8,12 @@ export interface Group {
   groupId?: number;
 }
 
+export type GroupType =     'TRIP' | 'HOME' | 'COUPLE' | 'FRIENDS' | 'FAMILY' | 'OTHER'
+
+
 export interface CreateGroupPayload {
   name: string;
+  groupType: string;
   createdBy: number;
   userIds: number[];
 }
@@ -22,10 +26,7 @@ export interface ExpenseGroupResponseBody {
 
 export interface FriendResponseBody{
      userId:number;
-     groupMemberId:number;
-     email:string;
      name:string;
-     phoneNumber:string;
 }
 
 export interface GroupMembersResponseBody{
@@ -83,7 +84,7 @@ export const getAllGroupNames=()=>{
 }
 
 export const addGroupMembers=(userIds:number[],groupId:number)=>{
-  const response=axios.post<string>(`${API_BASE_URL}/api/groups/${groupId}/members`,{
+  const response=axios.post<string>(`${API_BASE_URL}/api/groups/addMembers`,{
     userIds,groupId
   })
     .then((res)=>res.data)

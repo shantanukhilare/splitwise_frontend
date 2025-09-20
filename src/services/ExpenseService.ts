@@ -32,6 +32,11 @@ export interface UserBalanceDto {
     amount:number;
 }
 
+export interface RecentActivity {
+  groupName:string;
+  activity:string;
+}
+
 
 export const addExpense=(payload:CreateEvenExpenseRequestBody)=>{
     return axios.post<string>(`${API_BASE_URL}`,payload)
@@ -113,6 +118,15 @@ export const getGroupWiseNetWithCounterparties=(groupId: number, userId: number)
       throw new Error(err.response?.data?.message || "Fetching net amounts with counterparties failed");
     });
 };
+
+export const getRecentActivityByGroupId = (groupId:number,userId:number)=>{
+  return axios
+    .get<RecentActivity[]>(`${API_BASE_URL}/recentActivity/${userId}/${groupId}`)
+    .then((res) => res.data)
+    .catch((err) => {
+      throw new Error(err.response?.data?.message || "Fetching net amounts with counterparties failed");
+    });
+}
 
 
 

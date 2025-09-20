@@ -14,10 +14,12 @@ import {
   getGroupWiseAmountsOwedToMe,
   addExpense,
   addUnevenExpense,
+  getRecentActivityByGroupId,
   type UserBalanceDto,
   type CreateEvenExpenseRequestBody,
   type CreateUnevenExpenseRequestBody,
   type unevenAmounts,
+  type RecentActivity,
 } from '../services/ExpenseService';
 import AddMember from '../components/AddMember';
 
@@ -25,7 +27,7 @@ const GroupDashboard: React.FC = () => {
   const { groupName } = useParams<{ groupName: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const currentUserId:number = localStorage.getItem("id")
+  const currentUserId: number = localStorage.getItem("id")
     ? parseInt(localStorage.getItem("id") || "0", 10)
     : 0;
 
@@ -39,6 +41,7 @@ const GroupDashboard: React.FC = () => {
   const [members, setMembers] = useState<GroupMembersResponseBody[]>([]);
   const [whoIOwe, setWhoIOwe] = useState<UserBalanceDto[]>([]);
   const [whoOwesMe, setWhoOwesMe] = useState<UserBalanceDto[]>([]);
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -57,20 +60,25 @@ const GroupDashboard: React.FC = () => {
       try {
         // Fetch members
         const groupMembers = await getGroupMembers(groupId ? parseInt(groupId) : 0);
+        console.log('group members from api call', groupMembers);
+
         setMembers(groupMembers);
 
         if (groupId) {
           // Fetch balances
           const ioWeData = await getGroupWiseAmountsIOwe(parseInt(groupId), currentUserId);
           const owedToMeData = await getGroupWiseAmountsOwedToMe(parseInt(groupId), currentUserId);
+          const recentActivityData = await getRecentActivityByGroupId(parseInt(groupId), currentUserId);
 
           setWhoIOwe(ioWeData);
           setWhoOwesMe(owedToMeData);
+          setRecentActivities(recentActivityData);
         }
       } catch (err) {
         console.error(err);
         setWhoIOwe([]);
         setWhoOwesMe([]);
+        setRecentActivities([]);
       } finally {
         setLoading(false);
       }
@@ -104,10 +112,10 @@ const GroupDashboard: React.FC = () => {
       } else {
         newSelectedMembers = prev.selectedMembers.filter(id => id !== memberId);
       }
-      
+
       const allMemberIds = members.map(m => m.id);
       const isSelectAll = allMemberIds.every(id => newSelectedMembers.includes(id));
-      
+
       return {
         ...prev,
         selectedMembers: newSelectedMembers,
@@ -136,9 +144,9 @@ const GroupDashboard: React.FC = () => {
     setSubmittingExpense(true);
     try {
       const allMemberIds = members.map(m => m.id);
-      const isEvenlySplit = expenseForm.selectAll || 
-        (expenseForm.selectedMembers.length === allMemberIds.length && 
-         allMemberIds.every(id => expenseForm.selectedMembers.includes(id)));
+      const isEvenlySplit = expenseForm.selectAll ||
+        (expenseForm.selectedMembers.length === allMemberIds.length &&
+          allMemberIds.every(id => expenseForm.selectedMembers.includes(id)));
 
       if (isEvenlySplit) {
         // Use evenly split API
@@ -154,7 +162,7 @@ const GroupDashboard: React.FC = () => {
         // For uneven split, create separate expense for each selected member
         const totalAmount = parseFloat(expenseForm.amount);
         const perMemberAmount = totalAmount / expenseForm.selectedMembers.length;
-        
+
         // Create expense for each selected member
         for (const memberId of expenseForm.selectedMembers) {
           const unevenAmounts: unevenAmounts = {
@@ -175,245 +183,334 @@ const GroupDashboard: React.FC = () => {
 
       toast.success('Expense added successfully!');
       setShowAddExpense(false);
-      setExpenseForm({ 
-        description: '', 
-        amount: '', 
+      setExpenseForm({
+        description: '',
+        amount: '',
         paidByUserId: currentUserId,
         selectedMembers: [],
         selectAll: false
       });
-      
+
       // Refresh data
       const groupMembers = await getGroupMembers(parseInt(groupId));
       setMembers(groupMembers);
       const ioWeData = await getGroupWiseAmountsIOwe(parseInt(groupId), currentUserId);
       const owedToMeData = await getGroupWiseAmountsOwedToMe(parseInt(groupId), currentUserId);
+      const recentActivityData = await getRecentActivityByGroupId(parseInt(groupId), currentUserId);
       setWhoIOwe(ioWeData);
       setWhoOwesMe(owedToMeData);
+      setRecentActivities(recentActivityData);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to add expense');
     } finally {
       setSubmittingExpense(false);
     }
   };
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen p-4 sm:p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Header Section */}
-          <div className="bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 p-6 mb-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/3 to-transparent"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <motion.button
-                    whileHover={{ x: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="modern-btn group rounded-full relative flex items-center overflow-hidden hover:w-auto w-12 transition-all duration-700"
-                    onClick={() => navigate(-1)}
-                  >
-                    <FaArrowLeft className="text-lg transition-transform duration-700 group-hover:-translate-x-1 flex-shrink-0" />
-                    <span className="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-700 max-w-0 group-hover:max-w-xs overflow-hidden">
-                      Back to Groups
-                    </span>
-                  </motion.button>
-                  <h1 className="heading">
-                    {groupName}
-                  </h1>
-                </div>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto"
+      >
+        {/* Header Section */}
+        <div className="bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 p-6 mb-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/3 to-transparent"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="modern-btn"
-                  onClick={() => setShowAddExpense(true)}
+                  whileHover={{ x: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="modern-btn group rounded-full relative flex items-center overflow-hidden hover:w-auto w-12 transition-all duration-700"
+                  onClick={() => navigate(-1)}
                 >
-                  <FaPlus className="text-lg" />
-                  <span> Add Expense</span>
+                  <FaArrowLeft className="text-lg transition-transform duration-700 group-hover:-translate-x-1 flex-shrink-0" />
+                  <span className="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-700 max-w-0 group-hover:max-w-xs overflow-hidden">
+                    Back to Groups
+                  </span>
                 </motion.button>
+                <h1 className="heading">
+                  {groupName}
+                </h1>
               </div>
+              <motion.button
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                className="modern-btn"
+                onClick={() => setShowAddExpense(true)}
+              >
+                <FaPlus className="text-lg" />
+                <span> Add Expense</span>
+              </motion.button>
+            </div>
 
-              {loading ? (
-                <div className="text-center text-gray-400 py-10">Loading group dashboard...</div>
-              ) : (
-                <>
-                  {/* Summary Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <motion.div 
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className="bg-red-500/10 backdrop-blur-xl rounded-xl p-4 border border-red-400/20 shadow-lg relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-black to-red-900"></div>
-                      <div className="relative z-10 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">-</span>
-                        </div>
-                        <div>
-                          <p className="text-red-300 font-semibold text-xs uppercase tracking-wide">You Owe</p>
-                          <p className="text-2xl font-black text-red-200">₹{totalIOwe}</p>
-                        </div>
+            {loading ? (
+              <div className="text-center text-gray-400 py-10">Loading group dashboard...</div>
+            ) : (
+              <>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="bg-red-500/10 backdrop-blur-xl rounded-xl p-4 border border-red-400/20 shadow-lg relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-black to-red-900"></div>
+                    <div className="relative z-10 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">-</span>
                       </div>
-                    </motion.div>
-                  
-                    <motion.div 
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className="bg-green-500/10 backdrop-blur-xl rounded-xl p-4 border border-green-400/20 shadow-lg relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-black to-green-800"></div>
-                      <div className="relative z-10 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">+</span>
-                        </div>
-                        <div>
-                          <p className="text-green-300 font-semibold text-xs uppercase tracking-wide">Owed To You</p>
-                          <p className="text-2xl font-black text-green-200">₹{totalOwedToMe}</p>
-                        </div>
+                      <div>
+                        <p className="text-red-300 font-semibold text-xs uppercase tracking-wide">You Owe</p>
+                        <p className="text-2xl font-black text-red-200">₹{totalIOwe}</p>
                       </div>
-                    </motion.div>
-                  
-                    <motion.div 
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className={`backdrop-blur-xl rounded-xl p-4 border shadow-lg relative overflow-hidden ${
-                        netBalance > 0 
-                          ? 'bg-emerald-500/10 border-emerald-400/20' 
-                          : netBalance < 0 
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="bg-green-500/10 backdrop-blur-xl rounded-xl p-4 border border-green-400/20 shadow-lg relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-black to-green-800"></div>
+                    <div className="relative z-10 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">+</span>
+                      </div>
+                      <div>
+                        <p className="text-green-300 font-semibold text-xs uppercase tracking-wide">Owed To You</p>
+                        <p className="text-2xl font-black text-green-200">₹{totalOwedToMe}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className={`backdrop-blur-xl rounded-xl p-4 border shadow-lg relative overflow-hidden ${netBalance > 0
+                        ? 'bg-emerald-500/10 border-emerald-400/20'
+                        : netBalance < 0
                           ? 'bg-orange-500/10 border-orange-400/20'
                           : 'bg-gray-500/10 border-gray-400/20'
                       }`}
-                    >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${
-                        netBalance > 0 
-                          ? 'from-emerald-900 via-black to-emerald-800' 
-                          : netBalance < 0 
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${netBalance > 0
+                        ? 'from-emerald-900 via-black to-emerald-800'
+                        : netBalance < 0
                           ? 'from-orange-900 via-black to-orange-800'
                           : 'from-gray-900 via-black to-gray-800'
                       }`}></div>
-                      <div className="relative z-10 flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          netBalance > 0 
-                            ? 'bg-emerald-500' 
-                            : netBalance < 0 
+                    <div className="relative z-10 flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${netBalance > 0
+                          ? 'bg-emerald-500'
+                          : netBalance < 0
                             ? 'bg-orange-500'
                             : 'bg-gray-500'
                         }`}>
-                          <span className="text-white font-bold text-lg">=</span>
-                        </div>
-                        <div>
-                          <p className={`font-semibold text-xs uppercase tracking-wide ${
-                            netBalance > 0 
-                              ? 'text-emerald-300' 
-                              : netBalance < 0 
+                        <span className="text-white font-bold text-lg">=</span>
+                      </div>
+                      <div>
+                        <p className={`font-semibold text-xs uppercase tracking-wide ${netBalance > 0
+                            ? 'text-emerald-300'
+                            : netBalance < 0
                               ? 'text-orange-300'
                               : 'text-gray-300'
                           }`}>Net Balance</p>
-                          <p className={`text-2xl font-black ${
-                            netBalance > 0 
-                              ? 'text-emerald-200' 
-                              : netBalance < 0 
+                        <p className={`text-2xl font-black ${netBalance > 0
+                            ? 'text-emerald-200'
+                            : netBalance < 0
                               ? 'text-orange-200'
                               : 'text-gray-200'
                           }`}>
-                            ₹{Math.abs(netBalance)}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Member Balances Section */}
-          <div className="bg-black/30 backdrop-blur-sm rounded-3xl shadow-xl p-8">
-              <div className='flex items-center justify-between mb-8'>
-                <h2 className="heading">
-                  👥 Group Members
-                </h2>
-                <motion.button 
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                  className='modern-btn'
-                  onClick={() => setShowCreate(true)}
-                >
-                  <FaPlus className="text-lg" />
-                  <span>Add Member</span>
-                </motion.button>
-              </div>
-          
-              <div className="grid gap-4">
-                {memberNetBalances.map((member, index) => (
-                  <motion.div
-                    key={member.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02, x: 10 }}
-                    className={`flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 ${
-                      member.netAmount > 0
-                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300'
-                        : member.netAmount < 0
-                        ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200 hover:border-red-300'
-                        : 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${
-                        member.netAmount > 0
-                          ? 'bg-green-500'
-                          : member.netAmount < 0
-                          ? 'bg-red-500'
-                          : 'bg-gray-400'
-                      }`}>
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-800">{member.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {member.netAmount > 0 
-                            ? 'Owes you money' 
-                            : member.netAmount < 0 
-                            ? 'You owe them' 
-                            : 'All settled up'}
+                          ₹{Math.abs(netBalance)}
                         </p>
                       </div>
                     </div>
-                
-                    <div className="text-right">
-                      {member.netAmount > 0 ? (
-                        <div className="text-2xl font-black text-green-600">+₹{member.netAmount}</div>
-                      ) : member.netAmount < 0 ? (
-                        <div className="text-2xl font-black text-red-600">-₹{Math.abs(member.netAmount)}</div>
-                      ) : (
-                        <div className="text-xl font-bold text-gray-500">₹0</div>
-                      )}
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">
-                        {member.netAmount !== 0 ? 'Balance' : 'Settled'}
+                  </motion.div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Member Balances Section */}
+        <div className="bg-black/30 backdrop-blur-sm rounded-3xl shadow-xl p-8">
+          <div className='flex items-center justify-between mb-8'>
+            <h2 className="heading">
+              👥 Group Members
+            </h2>
+            <motion.button
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              className='modern-btn'
+              onClick={() => setShowCreate(true)}
+            >
+              <FaPlus className="text-lg" />
+              <span>Add Member</span>
+            </motion.button>
+          </div>
+
+          <div className="grid gap-4">
+            {memberNetBalances.map((member, index) => (
+              <motion.div
+                key={member.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02, x: 10 }}
+                className={`flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 ${member.netAmount > 0
+                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300'
+                    : member.netAmount < 0
+                      ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200 hover:border-red-300'
+                      : 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200 hover:border-gray-300'
+                  }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${member.netAmount > 0
+                      ? 'bg-green-500'
+                      : member.netAmount < 0
+                        ? 'bg-red-500'
+                        : 'bg-gray-400'
+                    }`}>
+                    {member.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">{member.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      {member.netAmount > 0
+                        ? 'Owes you money'
+                        : member.netAmount < 0
+                          ? 'You owe them'
+                          : 'All settled up'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  {member.netAmount > 0 ? (
+                    <div className="text-2xl font-black text-green-600">+₹{member.netAmount}</div>
+                  ) : member.netAmount < 0 ? (
+                    <div className="text-2xl font-black text-red-600">-₹{Math.abs(member.netAmount)}</div>
+                  ) : (
+                    <div className="text-xl font-bold text-gray-500">₹0</div>
+                  )}
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">
+                    {member.netAmount !== 0 ? 'Balance' : 'Settled'}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+
+            {memberNetBalances.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12 text-gray-500"
+              >
+                <FaUserFriends className="text-6xl mx-auto mb-4 text-gray-300" />
+                <p className="text-xl font-semibold mb-2">No members yet</p>
+                <p>Add some friends to start splitting expenses!</p>
+              </motion.div>
+            )}
+
+
+          </div>
+
+        </div>
+        {/* Recent Activity */}
+        <motion.div
+          variants={cardVariants}
+          className="bg-black/30 mt-5 backdrop-blur-xl rounded-2xl p-6  shadow-xl"
+        >
+          <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+            📝 Recent Activity
+          </h3>
+          <motion.div
+            variants={containerVariants}
+            className="space-y-4"
+          >
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => {
+                // Add emojis based on activity content
+                const getActivityEmoji = (activityText: string) => {
+                  const text = activityText.toLowerCase();
+                  if (text.includes('added') || text.includes('expense')) return '💰';
+                  if (text.includes('paid') || text.includes('payment')) return '💳';
+                  if (text.includes('settled') || text.includes('settle')) return '✅';
+                  if (text.includes('joined') || text.includes('member')) return '👋';
+                  if (text.includes('updated') || text.includes('modified')) return '✏️';
+                  if (text.includes('deleted') || text.includes('removed')) return '🗑️';
+                  return '📝';
+                };
+
+                return (
+                  <motion.div
+                    key={index}
+                    variants={cardVariants}
+                    whileHover={{
+                      x: 5,
+                      scale: 1.02,
+                      boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+                    }}
+                    className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-xl transition-all duration-300 cursor-pointer hover:bg-white/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className=" flex-shrink-0 item-start flex-xl">
+                        {getActivityEmoji(activity.activity)}
+                      </span>
+                      <div className="flex item-center">
+                        <p className="text-white/90 leading-relaxed">
+                          {activity.activity}
+                        </p>
+                        
                       </div>
                     </div>
                   </motion.div>
-                ))}
-            
-                {memberNetBalances.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12 text-gray-500"
-                  >
-                    <FaUserFriends className="text-6xl mx-auto mb-4 text-gray-300" />
-                    <p className="text-xl font-semibold mb-2">No members yet</p>
-                    <p>Add some friends to start splitting expenses!</p>
-                  </motion.div>
-                )}
-              </div>
-          </div>
+                );
+              })
+            ) : (
+              <motion.div
+                variants={cardVariants}
+                className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-xl text-center"
+              >
+                <div className="text-4xl mb-3">📭</div>
+                <p className="text-white/70 text-lg font-medium mb-2">No recent activity</p>
+                <p className="text-white/50 text-sm">Start adding expenses to see activity here!</p>
+              </motion.div>
+            )}
+          </motion.div>
         </motion.div>
 
-        <AddMember
+
+      </motion.div>
+
+
+
+      <AddMember
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
         currentUserId={currentUserId}
@@ -484,7 +581,7 @@ const GroupDashboard: React.FC = () => {
               <label className="block text-lg font-semibold text-teal-700 mb-3">
                 Split With Members
               </label>
-              
+
               {/* Select All Option */}
               <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-lg border border-teal-200">
                 <input
@@ -552,7 +649,7 @@ const GroupDashboard: React.FC = () => {
         </motion.div>
       </Modal>
 
-      <ToastContainer 
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
